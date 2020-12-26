@@ -118,7 +118,7 @@ var widgetServer={
             '<span class="statusItem connected ${connected}"></span>'+
             '<span class="statusCommand ${command}"></span>'+
             '<span class="statusItem hasRmb ${hasRmb}"></span>'+
-            '<span class="statusText hasRmb">hasRmb</span>'+
+            '<span class="statusText hasRmb">RMB</span>'+
             '</div>'+
             '</div>';
         var replacements={
