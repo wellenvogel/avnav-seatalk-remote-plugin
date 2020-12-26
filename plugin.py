@@ -161,8 +161,10 @@ class Plugin:
       hasRMB=False
       if (self.lastReceived + 5) >= now:
         hasRMB=True
-      return {'status': 'OK','hasRMB':hasRMB,'connected':self.isConnected}
+      return {'status': 'OK','hasRmb':hasRMB,'connected':self.isConnected}
     if url[0:3] == 'key':
+      #we simply use an url of /plugins/...setalk-remote/api/keyp1
+      #this way we do not need to parse query param
       key=url[3:]
       KEYMAP={
         'p1':'+1',
@@ -179,7 +181,7 @@ class Plugin:
         return {'status': 'not connected'}
       try:
         self.sendCommand(keyval)
-        return {'statuts':'OK'}
+        return {'status':'OK'}
       except Exception as e:
         return {'status':e.message}
 
