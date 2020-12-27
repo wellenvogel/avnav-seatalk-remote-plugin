@@ -1,9 +1,6 @@
 import time
 import threading
 import serial
-#the following import is optional
-#it only allows "intelligent" IDEs (like PyCharm) to support you in using it
-from avnav_api import AVNApi
 
 
 class Plugin:
