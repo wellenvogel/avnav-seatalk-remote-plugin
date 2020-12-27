@@ -12,7 +12,7 @@ Basically this software uses the [AvNav Plugin Interface](https://www.wellenvoge
 Installation
 ------------
 You can use the plugin in 2 different ways.
-1.  Download the source code as a zip and unpack it into a directory /home/pi/avnav/data/plugin/seatalk-remote.
+1.  Download the source code as a zip and unpack it into a directory /home/pi/avnav/data/plugins/seatalk-remote.
     In this case the name of the plugin will be user-setalk-remote. You can change the files and adapt it to your needs.
 
 1.  Download the package provided ##TODO## or build your own package using buildPackage.sh (requires a linux machine with docker installed). Install the package using the command
@@ -73,4 +73,4 @@ Package Building
 ----------------
 For a simple package building [NFPM](https://nfpm.goreleaser.com/) is used and started in a docker container. In the [package.yaml](package.yaml) the properties of the packge can be set.
 
-Additionally a [GitHub workflow](.github/workflows/createPackage.yml) has been created to create a release and build a package whenever you push to the release branch.
+Additionally a [GitHub workflow](.github/workflows/createPackage.yml) has been set up to create a release and build a package whenever you push to the release branch.
