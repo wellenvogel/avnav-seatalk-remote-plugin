@@ -73,3 +73,4 @@ Package Building
 ----------------
 For a simple package building [NFPM](https://nfpm.goreleaser.com/) is used and started in a docker container. In the [package.yaml](package.yaml) the properties of the packge can be set.
 
+Additionally a [GitHub workflow](.github/workflows/createPackage.yml) has been created to create a release and build a package whenever you push to the release branch.

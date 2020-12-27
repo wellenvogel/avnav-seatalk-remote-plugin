@@ -107,7 +107,7 @@ class Plugin:
       self.api.setStatus("STARTED", "using usbid %s, baud=%d" % (usbid, self.baud))
     else:
       self.api.setStatus("STARTED","using device %s, baud=%d"%(self.device,self.baud))
-    connectionHandler=threading.Thread(target=self.handleConnection)
+    connectionHandler=threading.Thread(target=self.handleConnection, name='seatalk-remote-connection')
     connectionHandler.setDaemon(True)
     connectionHandler.start()
     while True:
@@ -129,12 +129,14 @@ class Plugin:
         try:
           self.connection = serial.Serial(port=pnum, baudrate=self.baud)
           self.api.setStatus("NMEA","connected to %s at %d"%(self.device,self.baud))
+          self.api.log("connected to %s at %d" % (self.device, self.baud))
           self.isConnected=True
           #continously read data to get an exception if disconnected
           while True:
             self.connection.readline(10)
         except Exception as e:
-          self.api.setStatus("ERROR","unable to connect to %s: %s"%(self.device, unicode(e.message)))
+          self.api.setStatus("ERROR","unable to connect/connection lost to %s: %s"%(self.device, unicode(e.message)))
+          self.api.error("unable to connect/connection lost to %s: %s" % (self.device, unicode(e.message)))
           self.isConnected=False
           time.sleep(1)
       time.sleep(1)

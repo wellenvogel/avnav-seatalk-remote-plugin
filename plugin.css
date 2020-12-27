@@ -23,6 +23,11 @@
     justify-content: space-around;
 }
 
+.SeatalkRemote .buttonRow {
+    display: flex;
+    justify-content: space-around;
+}
+
 .SeaTalkRemote .statusText {
     font-size: 0.5em;
     display: inline-block;
