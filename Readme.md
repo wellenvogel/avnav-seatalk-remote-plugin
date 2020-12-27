@@ -15,7 +15,7 @@ You can use the plugin in 2 different ways.
 1.  Download the source code as a zip and unpack it into a directory /home/pi/avnav/data/plugins/seatalk-remote.
     In this case the name of the plugin will be user-setalk-remote. You can change the files and adapt it to your needs.
 
-1.  Download the package provided ##TODO## or build your own package using buildPackage.sh (requires a linux machine with docker installed). Install the package using the command
+1.  Download the package provided in the releases section or build your own package using buildPackage.sh (requires a linux machine with docker installed). Install the package using the command
     ```
     sudo dpkg -i avnav-seatalk-remote-plugin...._all.deb
     ```
