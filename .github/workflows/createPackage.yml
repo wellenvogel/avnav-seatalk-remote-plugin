@@ -25,4 +25,4 @@ jobs:
 
       # Runs a single command using the runners shell
       - name: build package
-        run: ./buildPackage.sh
+        run: ./buildPkg.sh
