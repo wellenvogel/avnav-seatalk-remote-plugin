@@ -1,0 +1,20 @@
+# nfpm example config file
+#
+# check https://nfpm.goreleaser.com/configuration for detailed usage
+#
+name: "avnav-seatalk-remote-plugin"
+arch: "all"
+platform: "linux"
+version: "v1.0.0"
+section: "default"
+priority: "extra"
+depends:
+- avnav
+maintainer: "Andreas Vogel <andreas@sellenvogel.de>"
+description: |
+  AvNav plugin to interwork with the seatalk remote https://github.com/AK-Homberger/Seatalk-Autopilot-Remote-Control
+homepage: "https://example.com"
+license: "MIT"
+contents:
+- src: ./plugin.*
+  dst: /usr/lib/avnav/plugins/seatalk-remote
