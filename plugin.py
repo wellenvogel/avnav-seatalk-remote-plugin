@@ -81,19 +81,32 @@ class Plugin:
     """
     seq=0
     self.api.log("started")
+    enabled=self.getConfigValue('enabled')
+    if enabled is not None and enabled.lower()!='true':
+      self.api.setStatus("INACTIVE", "disabled by config")
+      return
+    usbid=None
     try:
-      defaultValues=self.pluginInfo().get('config')
       self.baud=int(self.getConfigValue('baud'))
       self.device=self.getConfigValue('device')
-      if self.device is None:
-        self.api.error("missing config value device")
-        self.api.setStatus("ERROR","missing config value device")
+      usbid=self.getConfigValue('usbid')
+      if self.device is None and usbid is None:
+        self.api.error("missing config value device or usbid")
+        self.api.setStatus("ERROR","missing config value device or usbid")
+        return
+      if self.device is not None and usbid is not None:
+        self.api.error("only one of device or usbid can be set")
+        self.api.setStatus("ERROR", "only one of device or usbid can be set")
         return
     except Exception as e:
       self.api.error("unable to parse config: %s",unicode(e.message))
       self.api.setStatus("ERROR","unable to parse config: %s",unicode(e.message))
       return
-    self.api.setStatus("STARTED","using device %s, baud=%d"%(self.device,self.baud))
+    if usbid is not None:
+      self.api.registerUsbHandler(usbid,self.deviceConnected)
+      self.api.setStatus("STARTED", "using usbid %s, baud=%d" % (usbid, self.baud))
+    else:
+      self.api.setStatus("STARTED","using device %s, baud=%d"%(self.device,self.baud))
     connectionHandler=threading.Thread(target=self.handleConnection)
     connectionHandler.setDaemon(True)
     connectionHandler.start()
@@ -104,28 +117,39 @@ class Plugin:
 
   def handleConnection(self):
     #on windows we would need an integer as device...
-    try:
-      pnum=int(self.device)
-    except:
-      pnum=self.device
     while True:
-      self.isConnected=False
-      self.isBusy=False
-      self.api.setStatus("STARTED", "trying to connect to %s at %d" % (self.device, self.baud))
-      try:
-        self.connection = serial.Serial(port=pnum, baudrate=self.baud)
-        self.api.setStatus("NMEA","connected to %s at %d"%(self.device,self.baud))
-        self.isConnected=True
-        #continously read data to get an exception if disconnected
-        while True:
-          self.connection.readline(10)
-      except Exception as e:
-        self.api.setStatus("ERROR","unable to connect to %s: %s"%(self.device, unicode(e.message)))
+      if self.device is not None:
+        try:
+          pnum = int(self.device)
+        except:
+          pnum = self.device
         self.isConnected=False
-        time.sleep(2)
+        self.isBusy=False
+        self.api.setStatus("STARTED", "trying to connect to %s at %d" % (self.device, self.baud))
+        try:
+          self.connection = serial.Serial(port=pnum, baudrate=self.baud)
+          self.api.setStatus("NMEA","connected to %s at %d"%(self.device,self.baud))
+          self.isConnected=True
+          #continously read data to get an exception if disconnected
+          while True:
+            self.connection.readline(10)
+        except Exception as e:
+          self.api.setStatus("ERROR","unable to connect to %s: %s"%(self.device, unicode(e.message)))
+          self.isConnected=False
+          time.sleep(1)
+      time.sleep(1)
 
-
-    pass
+  def deviceConnected(self,device):
+    if self.device == device:
+      return
+    try:
+      if self.connection is not None:
+        self.connection.close()
+    except:
+      pass
+    self.connection=None
+    self.api.log("device connected %s",device)
+    self.device=device
   def sendCommand(self,val):
     #we avoid blocking multiple threads here
     canWrite=False
@@ -161,7 +185,10 @@ class Plugin:
       hasRMB=False
       if (self.lastReceived + 5) >= now:
         hasRMB=True
-      return {'status': 'OK','hasRmb':hasRMB,'connected':self.isConnected}
+      return {'status': 'OK',
+              'hasRmb':hasRMB,
+              'connected':self.isConnected,
+              'device':self.device}
     if url[0:3] == 'key':
       #we simply use an url of /plugins/...setalk-remote/api/keyp1
       #this way we do not need to parse query param
