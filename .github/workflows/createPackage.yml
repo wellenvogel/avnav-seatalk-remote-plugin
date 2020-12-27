@@ -6,7 +6,7 @@ name: createPackage
 on:
   # Triggers the workflow on push or pull request events but only for the master branch
   push:
-    branches: [ package ]
+    branches: [ release ]
   
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -23,6 +23,43 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
+      #set version
+      - name: set version
+        id: version
+        run: echo "::set-output name=version::$(date +'%Y.%m.%d')"
+
       # Runs a single command using the runners shell
       - name: build package
-        run: ./buildPkg.sh
+        run: ./buildPkg.sh ${{ steps.version.outputs.version}}
+
+      - name: parse package.yaml
+        id: pkgyml
+        uses: juliojimenez/yamler@v0 
+        with:
+          yaml-file: package.yaml
+      - name: test name
+        env: 
+          NAME: ${{ steps.pkgyml.outputs.name }}_${{ steps.version.outputs.version}}_${{ steps.pkgyml.outputs.arch }}.deb
+        run: echo ${NAME}
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.version.outputs.version}}
+          release_name: ${{ steps.version.outputs.version }}
+          draft: false
+          prerelease: false
+      - name: Upload Release Asset
+        id: upload-release-asset 
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PKG_NAME: ${{ steps.pkgyml.outputs.name }}_${{ steps.version.outputs.version}}_${{ steps.pkgyml.outputs.arch }}.deb
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
+          asset_path: ./${PKG_NAME}
+          asset_name: ${PKG_NAME}
+          asset_content_type: application/octet-stream

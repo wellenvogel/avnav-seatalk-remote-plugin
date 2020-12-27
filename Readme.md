@@ -1,4 +1,4 @@
-AvNav Setalk Remote Control
+AvNav Seatalk Remote Control
 ===========================
 
 This project provides a plugin for [AvNav](https://www.wellenvogel.net/software/avnav/docs/beschreibung.html?lang=en) that controls the Seatalk Remote control provided by [AK-Homberger](https://github.com/AK-Homberger/Seatalk-Autopilot-Remote-Control).
