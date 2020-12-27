@@ -15,6 +15,12 @@
     font-size: 2em;
     width: 3em;
 }
+.nightMode .SeaTalkRemote .remote {
+    color: red;
+    background-color: #afaead47;
+}
+
+
 .SeaTalkRemote .statusRow {
     margin-top: 0.5em;
     display: flex;
