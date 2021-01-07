@@ -96,8 +96,8 @@ class Plugin:
         self.api.setStatus("ERROR", "only one of device or usbid can be set")
         return
     except Exception as e:
-      self.api.error("unable to parse config: %s",unicode(e.message))
-      self.api.setStatus("ERROR","unable to parse config: %s",unicode(e.message))
+      self.api.error("unable to parse config: %s",str(e))
+      self.api.setStatus("ERROR","unable to parse config: %s",str(e))
       return
     if usbid is not None:
       self.api.registerUsbHandler(usbid,self.deviceConnected)
@@ -132,8 +132,8 @@ class Plugin:
           while True:
             self.connection.readline(10)
         except Exception as e:
-          self.api.setStatus("ERROR","unable to connect/connection lost to %s: %s"%(self.device, unicode(e.message)))
-          self.api.error("unable to connect/connection lost to %s: %s" % (self.device, unicode(e.message)))
+          self.api.setStatus("ERROR","unable to connect/connection lost to %s: %s"%(self.device, str(e)))
+          self.api.error("unable to connect/connection lost to %s: %s" % (self.device, str(e)))
           self.isConnected=False
           time.sleep(1)
       time.sleep(1)
@@ -160,7 +160,7 @@ class Plugin:
     if not canWrite:
       raise Exception("busy")
     try:
-      self.connection.write(val+"\n")
+      self.connection.write((val+"\n").encode('ascii'))
     except Exception as e:
       self.condition.acquire()
       self.isBusy=False
@@ -209,6 +209,6 @@ class Plugin:
         self.sendCommand(keyval)
         return {'status':'OK'}
       except Exception as e:
-        return {'status':e.message}
+        return {'status':'Exception: %s'%str(e)}
 
     return {'status','unknown request'}
