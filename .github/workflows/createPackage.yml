@@ -26,7 +26,7 @@ jobs:
       #set version
       - name: set version
         id: version
-        run: echo "::set-output name=version::$(date +'%Y.%-m.%-d')"
+        run: echo "::set-output name=version::$(date +'%Y%m%d')"
 
       # Runs a single command using the runners shell
       - name: build package

@@ -6,6 +6,7 @@ name: "avnav-seatalk-remote-plugin"
 arch: "all"
 platform: "linux"
 version: "v1.0.0"
+keep_version: true
 section: "default"
 priority: "extra"
 depends:
