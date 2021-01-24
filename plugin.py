@@ -113,27 +113,34 @@ class Plugin:
         self.lastReceived=time.time()
 
   def handleConnection(self):
-    #on windows we would need an integer as device...
+    errorReported=False
+    lastDevice=None
     while True:
       if self.device is not None:
+        if self.device != lastDevice:
+          self.api.setStatus("STARTED", "trying to connect to %s at %d" % (self.device, self.baud))
+          lastDevice=self.device
+        #on windows we would need an integer as device...
         try:
           pnum = int(self.device)
         except:
           pnum = self.device
         self.isConnected=False
         self.isBusy=False
-        self.api.setStatus("STARTED", "trying to connect to %s at %d" % (self.device, self.baud))
         try:
           self.connection = serial.Serial(port=pnum, baudrate=self.baud)
           self.api.setStatus("NMEA","connected to %s at %d"%(self.device,self.baud))
           self.api.log("connected to %s at %d" % (self.device, self.baud))
           self.isConnected=True
+          errorReported=False
           #continously read data to get an exception if disconnected
           while True:
             self.connection.readline(10)
         except Exception as e:
-          self.api.setStatus("ERROR","unable to connect/connection lost to %s: %s"%(self.device, str(e)))
-          self.api.error("unable to connect/connection lost to %s: %s" % (self.device, str(e)))
+          if not errorReported:
+            self.api.setStatus("ERROR","unable to connect/connection lost to %s: %s"%(self.device, str(e)))
+            self.api.error("unable to connect/connection lost to %s: %s" % (self.device, str(e)))
+            errorReported=True
           self.isConnected=False
           time.sleep(1)
       time.sleep(1)
