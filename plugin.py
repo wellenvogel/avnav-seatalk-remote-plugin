@@ -4,7 +4,23 @@ import serial
 
 
 class Plugin:
-
+  CONFIG=[
+    {
+      'name': 'device',
+      'description': 'set to the device path (alternative to usbid)',
+      'default': ''
+    },
+    {
+      'name': 'usbid',
+      'description': 'set to the usbid of the device (alternative to device)',
+      'default': ''
+    },
+    {
+      'name': 'baud',
+      'description': 'baudrate for connection',
+      'default': '9600'
+    }
+  ]
   @classmethod
   def pluginInfo(cls):
     """
@@ -18,24 +34,7 @@ class Plugin:
     """
     return {
       'description': 'seatalk remote control',
-      'config': [
-        {
-          'name': 'enabled',
-          'description': 'set to true to enable plugin',
-          'default': 'true'
-        },
-        {
-          'name': 'device',
-          'description': 'set to the device path',
-          'default': None
-        },
-        {
-          'name': 'baud',
-          'description': 'baudrate for connection',
-          'default': '9600'
-        }
-
-        ],
+      'config': cls.CONFIG,
       'data': [
       ]
     }
@@ -57,8 +56,21 @@ class Plugin:
     self.device=None
     self.baud=None
     self.isBusy=False
-    self.condition=threading.Condition();
+    self.condition=threading.Condition()
+    if hasattr(self.api,'registerEditableParameters'):
+      self.api.registerEditableParameters(self.CONFIG,self._changeConfig)
+    if hasattr(self.api,'registerRestart'):
+      self.api.registerRestart(self._apiRestart)
+    self.changeSequence=0
+    self.startSequence=0
 
+  def _apiRestart(self):
+    self.startSequence+=1
+    self.changeSequence+=1
+
+  def _changeConfig(self,newValues):
+    self.api.saveConfigValues(newValues)
+    self.changeSequence+=1
 
   def getConfigValue(self,name):
     defaults=self.pluginInfo()['config']
@@ -68,6 +80,16 @@ class Plugin:
     return self.api.getConfigValue(name)
 
   def run(self):
+    startSequence=self.startSequence
+    while startSequence == self.startSequence:
+      try:
+        #only AvNav after 20210224
+        self.api.deregisterUsbHandler()
+      except:
+        pass
+      self.runInternal()
+
+  def runInternal(self):
     """
     the run method
     this will be called after successfully instantiating an instance
@@ -76,6 +98,7 @@ class Plugin:
     and writes them to the store every 10 records
     @return:
     """
+    changeSequence=self.changeSequence
     seq=0
     self.api.log("started")
     enabled=self.getConfigValue('enabled')
@@ -87,6 +110,10 @@ class Plugin:
       self.baud=int(self.getConfigValue('baud'))
       self.device=self.getConfigValue('device')
       usbid=self.getConfigValue('usbid')
+      if usbid == '':
+        usbid=None
+      if self.device == '':
+        self.device=None
       if self.device is None and usbid is None:
         self.api.error("missing config value device or usbid")
         self.api.setStatus("ERROR","missing config value device or usbid")
@@ -107,15 +134,16 @@ class Plugin:
     connectionHandler=threading.Thread(target=self.handleConnection, name='seatalk-remote-connection')
     connectionHandler.setDaemon(True)
     connectionHandler.start()
-    while True:
+    while changeSequence == self.changeSequence:
       seq,data=self.api.fetchFromQueue(seq,10,filter="$RMB")
       if len(data) > 0:
         self.lastReceived=time.time()
 
   def handleConnection(self):
+    changeSequence=self.changeSequence
     errorReported=False
     lastDevice=None
-    while True:
+    while changeSequence == self.changeSequence:
       if self.device is not None:
         if self.device != lastDevice:
           self.api.setStatus("STARTED", "trying to connect to %s at %d" % (self.device, self.baud))
