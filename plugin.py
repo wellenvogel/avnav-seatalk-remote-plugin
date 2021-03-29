@@ -115,16 +115,14 @@ class Plugin:
       if self.device == '':
         self.device=None
       if self.device is None and usbid is None:
-        self.api.error("missing config value device or usbid")
-        self.api.setStatus("ERROR","missing config value device or usbid")
-        return
+        raise Exception("missing config value device or usbid")
+
       if self.device is not None and usbid is not None:
-        self.api.error("only one of device or usbid can be set")
-        self.api.setStatus("ERROR", "only one of device or usbid can be set")
-        return
+        raise Exception("only one of device or usbid can be set")
     except Exception as e:
-      self.api.error("unable to parse config: %s",str(e))
-      self.api.setStatus("ERROR","unable to parse config: %s",str(e))
+      self.api.setStatus("ERROR", "config error %s "%str(e))
+      while changeSequence == self.changeSequence:
+        time.sleep(0.5)
       return
     if usbid is not None:
       self.api.registerUsbHandler(usbid,self.deviceConnected)
