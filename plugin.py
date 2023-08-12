@@ -154,13 +154,13 @@ class Plugin:
         self.isConnected=False
         self.isBusy=False
         try:
-          self.connection = serial.Serial(port=pnum, baudrate=self.baud)
+          self.connection = serial.Serial(port=pnum, baudrate=self.baud, timeout=5)
           self.api.setStatus("NMEA","connected to %s at %d"%(self.device,self.baud))
           self.api.log("connected to %s at %d" % (self.device, self.baud))
           self.isConnected=True
           errorReported=False
           #continously read data to get an exception if disconnected
-          while True:
+          while changeSequence == self.changeSequence:
             self.connection.readline(10)
         except Exception as e:
           if not errorReported:
@@ -170,6 +170,11 @@ class Plugin:
           self.isConnected=False
           time.sleep(1)
       time.sleep(1)
+    try:  
+      self.connection.close()  
+    except:
+      pass
+    self.connection=None
 
   def deviceConnected(self,device):
     if self.device == device:
