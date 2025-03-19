@@ -91,7 +91,7 @@ class Plugin:
 
   def runInternal(self):
     """
-    the run method
+    the run methodhttps://github.com/wellenvogel/esp32-nmea2000/blob/master/lib/exampletask/Readme.md
     this will be called after successfully instantiating an instance
     this method will be called in a separate Thread
     The example simply counts the number of NMEA records that are flowing through avnav
@@ -233,7 +233,7 @@ class Plugin:
       KEYMAP={
         'p1':'+1',
         'm1':'-1',
-        'p10':'-10',
+        'p10':'+10',
         'm10':'-10',
         'A':'A',
         'S':'S'
